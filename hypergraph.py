@@ -212,7 +212,7 @@ class HyperGraph:
     def get_vertex_count(self):
         """Return the number of ingredient vertices."""
 
-        return len(self.vertices)
+        return len(set(self.vertices))
 
     def get_hyperedge_count(self):
         """Return the number of food hyperedges."""
