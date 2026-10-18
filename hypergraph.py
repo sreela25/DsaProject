@@ -192,6 +192,16 @@ class HyperGraph:
             if food in foods2
         }
 
+    
+    def count_foods_for_ingredient(self, ingredient):
+        ingredient = self._normalize_name(ingredient)
+
+        if ingredient not in self.vertices:
+            return 0
+
+        return len(self.incidence[ingredient])
+
+    
     # --------------------------------------------------
     # INFORMATION AND DISPLAY
     # --------------------------------------------------
