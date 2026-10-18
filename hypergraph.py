@@ -249,6 +249,12 @@ class HyperGraph:
 
         print("=============================")
 
+    
+    def contains_food(self, food):
+        food = self._normalize_name(food)
+        return food in self.hyperedges
+
+
     # --------------------------------------------------
     # INTERNAL VALIDATION
     # --------------------------------------------------
