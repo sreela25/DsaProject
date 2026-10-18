@@ -2,13 +2,10 @@
 class HyperGraph:
     """
     Hypergraph ADT for the Food Ingredient Allergy Checker.
-
     Vertices:
         Ingredients
-
     Hyperedges:
         Food items connected to multiple ingredients.
-
     Incidence index:
         Ingredient -> set of foods containing that ingredient.
     """
@@ -24,10 +21,8 @@ class HyperGraph:
 
     def add_ingredient(self, ingredient):
         """Add an ingredient vertex."""
-
         if not isinstance(ingredient, str):
             raise TypeError("Ingredient must be a string.")
-
         ingredient = ingredient.strip().casefold()
 
         if not ingredient:
@@ -38,7 +33,6 @@ class HyperGraph:
 
         self.vertices.add(ingredient)
         self.incidence[ingredient] = set()
-
         return True
 
     def remove_ingredient(self, ingredient):
@@ -49,7 +43,6 @@ class HyperGraph:
         """
 
         ingredient = self._normalize_name(ingredient)
-
         if ingredient not in self.vertices:
             return False
 
@@ -57,7 +50,6 @@ class HyperGraph:
 
         for food in affected_foods:
             self.hyperedges[food].remove(ingredient)
-
         del self.incidence[ingredient]
         self.vertices.remove(ingredient)
 
@@ -79,7 +71,6 @@ class HyperGraph:
 
         if not isinstance(food, str):
             raise TypeError("Food name must be a string.")
-
         food = food.strip().casefold()
 
         if not food:
@@ -137,7 +128,6 @@ class HyperGraph:
             return False
 
         ingredients = self.hyperedges.pop(food)
-
         for ingredient in ingredients:
             self.incidence[ingredient].discard(food)
 
@@ -175,7 +165,6 @@ class HyperGraph:
 
         ingredient1 = self._normalize_name(ingredient1)
         ingredient2 = self._normalize_name(ingredient2)
-
         if (ingredient1 not in self.vertices or
                 ingredient2 not in self.vertices):
             return set()
@@ -204,7 +193,6 @@ class HyperGraph:
     def contains_food(self, food):
         food = self._normalize_name(food)
         return food in self.hyperedges
-    
     # --------------------------------------------------
     # INFORMATION AND DISPLAY
     # --------------------------------------------------
@@ -251,14 +239,12 @@ class HyperGraph:
         if not self.incidence:
             print("No ingredient vertices available.")
             return
-
         for ingredient in sorted(self.incidence):
             foods = sorted(self.incidence[ingredient])
 
             print(f"{ingredient.title():<15} -> {food_text} ({len(foods)} foods)")
 
         print("=============================")
-
     # --------------------------------------------------
     # INTERNAL VALIDATION
     # --------------------------------------------------
@@ -269,12 +255,9 @@ class HyperGraph:
 
         if not isinstance(name, str):
             raise TypeError("Name must be a string.")
-
         name = name.strip().casefold()
-
         if not name:
             raise ValueError("Name cannot be empty.")
-
         return name
 
     def validate_invariants(self):
@@ -301,10 +284,7 @@ class HyperGraph:
         return expected_incidence == self.incidence
 
 
-# ------------------------------------------------------
-# STANDALONE TEST
-# Run this file directly to test Member 1's module.
-# ------------------------------------------------------
+
 
 if __name__ == "__main__":
 
