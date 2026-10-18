@@ -216,8 +216,8 @@ class HyperGraph:
 
     def get_hyperedge_count(self):
         """Return the number of food hyperedges."""
-
-        return len(self.hyperedges)
+        count = len(self.hyperedges)
+        return count
 
     def get_incidence_count(self):
         """Return the total number of ingredient-food links."""
