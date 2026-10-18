@@ -201,6 +201,9 @@ class HyperGraph:
 
         return len(self.incidence[ingredient])
 
+    def contains_food(self, food):
+        food = self._normalize_name(food)
+        return food in self.hyperedges
     
     # --------------------------------------------------
     # INFORMATION AND DISPLAY
@@ -258,12 +261,6 @@ class HyperGraph:
             )
 
         print("=============================")
-
-    
-    def contains_food(self, food):
-        food = self._normalize_name(food)
-        return food in self.hyperedges
-
 
     # --------------------------------------------------
     # INTERNAL VALIDATION
