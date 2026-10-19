@@ -67,26 +67,25 @@ class FoodDatabase:
 
         if not target_ingredients:
             return []
+        candidates=set()
+        for ingredient in target_ingredients:
+            foods=self.graph.get_foods_for_ingredient(ingredient)
+            candidates.update(foods)
 
+        candidates.discard(food)
         similarities = []
 
-        for other_food in self.graph.hyperedges:
-            if other_food == food:
-                continue
-
+        for other_food in candidates:      
             other_ingredients = self.graph.get_ingredients_for_food(other_food)
-
             shared = target_ingredients.intersection(other_ingredients)
             combined = target_ingredients.union(other_ingredients)
 
             if combined:
                 score = len(shared) / len(combined)
-
                 if shared:
                     similarities.append(
                         (other_food, round(score, 3), shared)
                     )
-
         similarities.sort(key=lambda item: item[1], reverse=True)
 
         return similarities[:limit]
