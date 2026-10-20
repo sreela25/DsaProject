@@ -245,6 +245,14 @@ class HyperGraph:
             print(f"{ingredient.title():<15} -> {food_text} ({len(foods)} foods)")
 
         print("=============================")
+        
+    def display_statistics(self):
+        """Display structural statistics of the hypergraph for the DSA case study."""
+        print("\n====== HYPERGRAPH STATISTICS ======")
+        print(f"Ingredient Vertices (V): {self.get_vertex_count()}")
+        print(f"Food Hyperedges (E):     {self.get_hyperedge_count()}")
+        print(f"Total Incidence Links:   {self.get_incidence_count()}")
+        print("===================================")
     # --------------------------------------------------
     # INTERNAL VALIDATION
     # --------------------------------------------------
