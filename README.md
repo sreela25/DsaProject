@@ -1,5 +1,5 @@
 🥗 Food Ingredient & Allergy Management System
- A DSA Case Study using a custom Python Hypergraph.
+A DSA Case Study using a custom Python Hypergraph.
 
 💡 Why a Hypergraph?
 Standard graphs struggle to represent recipes because a single food item inherently connects multiple ingredients simultaneously. 
