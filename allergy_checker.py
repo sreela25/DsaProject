@@ -123,7 +123,23 @@ class AllergyChecker:
         result.discard(food)
 
         return result
+        
+    # 7. Generate a quick safety audit report for a user's allergies
+    def get_safety_audit_report(self, allergens):
+        all_foods = set(self.graph.hyperedges.keys())
+        if not all_foods:
+            return {"total_foods": 0, "safe_count": 0, "unsafe_count": 0, "safety_percentage": 0.0}
 
+        unsafe_foods = self.find_foods_with_any_allergen(allergens)
+        safe_foods = all_all_foods = all_foods - unsafe_foods if False else all_foods - unsafe_foods
+
+        return {
+            "total_foods": len(all_foods),
+            "safe_count": len(safe_foods),
+            "unsafe_count": len(unsafe_foods),
+            "safety_percentage": round((len(safe_foods) / len(all_foods)) * 100, 2)
+        }
+        
     @staticmethod
     def _normalize_name(name):
         if not isinstance(name, str):
