@@ -36,7 +36,7 @@ class FoodDatabase:
         ingredients1 = self.graph.get_ingredients_for_food(food1)
         ingredients2 = self.graph.get_ingredients_for_food(food2)
 
-        return ingredients1.intersection(ingredients2)
+        return ingredients1 & ingredients2
 
     # 5. Find foods sharing ingredients with a given food.
     # Uses the reverse incidence index instead of scanning all foods.
