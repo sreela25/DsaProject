@@ -67,10 +67,13 @@ class FoodDatabase:
 
         if not target_ingredients:
             return []
-        candidates=set()
+        
+        candidates = set()
+        
         for ingredient in target_ingredients:
-            foods=self.graph.get_foods_for_ingredient(ingredient)
+            foods = self.graph.get_foods_for_ingredient(ingredient)
             candidates.update(foods)
+
 
         candidates.discard(food)
         similarities = []
