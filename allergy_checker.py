@@ -120,7 +120,7 @@ class AllergyChecker:
                 self.graph.get_foods_for_ingredient(ingredient)
             )
 
-        result.discard(food)
+        result.remove(food) if food in result else None
 
         return result
         
