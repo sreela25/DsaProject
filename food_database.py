@@ -110,7 +110,7 @@ class FoodDatabase:
         report = {}
 
         for ingredient, foods in self.graph.incidence.items():
-            if len(foods) > 1:
+            if len(foods) >= 2:
                 report[ingredient] = sorted(foods)
 
         return report
