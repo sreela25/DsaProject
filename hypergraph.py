@@ -246,13 +246,16 @@ class HyperGraph:
 
         print("=============================")
         
+    
     def display_statistics(self):
-        """Display structural statistics of the hypergraph for the DSA case study."""
+        """Display structural statistics of the hypergraph."""
         print("\n====== HYPERGRAPH STATISTICS ======")
         print(f"Ingredient Vertices (V): {self.get_vertex_count()}")
         print(f"Food Hyperedges (E):     {self.get_hyperedge_count()}")
         print(f"Total Incidence Links:   {self.get_incidence_count()}")
+        print(f"Valid Structure:         {self.validate_invariants()}")
         print("===================================")
+
     # --------------------------------------------------
     # INTERNAL VALIDATION
     # --------------------------------------------------
