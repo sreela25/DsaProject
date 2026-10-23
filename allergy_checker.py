@@ -131,8 +131,7 @@ class AllergyChecker:
             return {"total_foods": 0, "safe_count": 0, "unsafe_count": 0, "safety_percentage": 0.0}
 
         unsafe_foods = self.find_foods_with_any_allergen(allergens)
-        safe_foods = all_all_foods = all_foods - unsafe_foods if False else all_foods - unsafe_foods
-
+        safe_foods = all_foods - unsafe_foods
         return {
             "total_foods": len(all_foods),
             "safe_count": len(safe_foods),
