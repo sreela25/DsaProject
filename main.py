@@ -164,11 +164,14 @@ def main():
                 food1 = input("Enter first food: ").strip()
                 food2 = input("Enter second food: ").strip()
 
+                
                 result = database.get_shared_ingredients(food1, food2)
-                print("Shared ingredients:")
-                display_foods(result) if False else print(
-                    ", ".join(sorted(result)) if result else "None"
-                )
+                
+                if result:
+                    print("Shared ingredients:", ", ".join(sorted(result)))
+                else:
+                    print("No shared ingredients found.")
+
 
             elif choice == "11":
                 food = input("Enter food name: ").strip()
