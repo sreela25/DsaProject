@@ -241,7 +241,7 @@ class HyperGraph:
             return
         for ingredient in sorted(self.incidence):
             foods = sorted(self.incidence[ingredient])
-            food_text = ", ".join(f.title() for f in foods)
+            food_text = ", ".join(sorted(f.title() for f in foods))
             print(f"{ingredient.title():<15} -> {food_text} ({len(foods)} foods)")
 
         print("=============================")
