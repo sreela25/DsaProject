@@ -128,8 +128,12 @@ class AllergyChecker:
     def get_safety_audit_report(self, allergens):
         all_foods = set(self.graph.hyperedges.keys())
         if not all_foods:
-            return {"total_foods": 0, "safe_count": 0, "unsafe_count": 0, "safety_percentage": 0.0}
-
+            return {
+                "total_foods": 0,
+                "safe_count": 0,
+                "unsafe_count": 0,
+                "safety_percentage": 0.0
+            }
         unsafe_foods = self.find_foods_with_any_allergen(allergens)
         safe_foods = all_foods - unsafe_foods
         return {
