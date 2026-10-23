@@ -53,7 +53,10 @@ class FoodDatabase:
 
             for other_food in foods:
                 if other_food != food:
-                    related.setdefault(other_food, set()).add(ingredient)
+                    if other_food not in related:
+                        related[other_food] = set()
+
+                    related[other_food].add(ingredient)
 
         return related
 
