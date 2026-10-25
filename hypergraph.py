@@ -35,8 +35,7 @@ class HyperGraph:
         return True
 
     # Time Complexity: O(n + d)
-    # Reason: Visits all foods containing the ingredient
-    # to remove the corresponding links.
+    # Reason: Visits all foods containing the ingredient to remove the corresponding links.
     def remove_ingredient(self, ingredient):
         ingredient = self._normalize_name(ingredient)
 
@@ -52,8 +51,7 @@ class HyperGraph:
 
     # Time Complexity: O(n + k) for a new food
     # Reason: Normalizes the names and adds k ingredient links.
-    # Updating a food takes O(n + k_old + k_new), excluding
-    # the total character-processing cost of all names.
+    # Updating a food takes O(n + k_old + k_new), excluding the total character-processing cost of all names.
     def add_food(self, food, ingredients):
         food = self._normalize_name(food)
 
@@ -129,8 +127,7 @@ class HyperGraph:
         return set(self.hyperedges[food])
 
     # Time Complexity: O(n1 + n2 + min(d1, d2))
-    # Reason: Normalizes both names, then iterates over the
-    # smaller incidence set and checks membership in the larger.
+    # Reason: Normalizes both names, then iterates over the smaller incidence set and checks membership in the larger.
     def get_common_foods(self, ingredient1, ingredient2):
         ingredient1 = self._normalize_name(ingredient1)
         ingredient2 = self._normalize_name(ingredient2)
