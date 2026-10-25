@@ -1,51 +1,38 @@
 
 from collections import Counter
-from hypergraph import HyperGraph
 
 
 class FoodDatabase:
-    def __init__(self, hypergraph):
-        self.graph = hypergraph
+    def __init__(self, graph):
+        self.graph = graph
 
-    # 1. Add a new food or update an existing food.
+    # Time Complexity: O(n + k)
+    # Adds a new food or updates its ingredients in the hypergraph.
     def add_or_update_food(self, food, ingredients):
         return self.graph.add_food(food, ingredients)
 
-    # 2. Remove a food from the database.
+    # Time Complexity: O(n + k)
+    # Removes a food and its ingredient links from the graph.
     def remove_food(self, food):
         return self.graph.remove_food(food)
 
-    # 3. Search foods by name.
-    def search_food(self, search_term):
-        if not isinstance(search_term, str):
-            raise TypeError("Search term must be a string.")
+    # Time Complexity: O(n)
+    # Checks whether a food with the given name exists.
+    def search_food(self, food):
+        return self.graph.contains_food(food)
 
-        search_term = search_term.strip().casefold()
-
-        if not search_term:
-            raise ValueError("Search term cannot be empty.")
-
-        return {
-            food: self.graph.get_ingredients_for_food(food)
-            for food in self.graph.hyperedges
-            if search_term in food
-        }
-
-    # 4. Find ingredients shared by two foods.
+    # Time Complexity: O(n + k1 + k2)
+    # Gets both ingredient sets and finds the ingredients they share.
     def get_shared_ingredients(self, food1, food2):
         ingredients1 = self.graph.get_ingredients_for_food(food1)
         ingredients2 = self.graph.get_ingredients_for_food(food2)
 
         return ingredients1 & ingredients2
 
-    # 5. Find foods sharing ingredients with a given food.
-    # Uses the reverse incidence index instead of scanning all foods.
+    # Time Complexity: O(n + I)
+    # Finds other foods that contain at least one ingredient used in the selected food.
     def find_related_foods(self, food):
         ingredients = self.graph.get_ingredients_for_food(food)
-
-        if not ingredients:
-            return {}
-
         related = {}
 
         for ingredient in ingredients:
@@ -60,60 +47,79 @@ class FoodDatabase:
 
         return related
 
-    # 6. Rank foods by ingredient similarity.
-    # Jaccard similarity = shared ingredients / total distinct ingredients.
+    # Time Complexity: O(n + I + C*k)
+    # Checks only foods that share at least one ingredient, calculates their Jaccard similarity, and returns the most similar foods first.
     def find_similar_foods(self, food, limit=5):
-        if not isinstance(limit, int) or isinstance(limit, bool) or limit < 1:
-            raise ValueError("Limit must be a positive integer.")
-
-        target_ingredients = self.graph.get_ingredients_for_food(food)
+        target_ingredients = (
+            self.graph.get_ingredients_for_food(food)
+        )
 
         if not target_ingredients:
             return []
-        
+
         candidates = set()
-        
+
         for ingredient in target_ingredients:
             foods = self.graph.get_foods_for_ingredient(ingredient)
             candidates.update(foods)
 
-
         candidates.discard(food)
         similarities = []
 
-        for other_food in candidates:      
-            other_ingredients = self.graph.get_ingredients_for_food(other_food)
+        for other_food in candidates:
+            other_ingredients = (
+                self.graph.get_ingredients_for_food(other_food)
+            )
+
             shared = target_ingredients.intersection(other_ingredients)
             combined = target_ingredients.union(other_ingredients)
 
             if combined:
                 score = len(shared) / len(combined)
+
                 if shared:
                     similarities.append(
                         (other_food, round(score, 3), shared)
                     )
-        similarities.sort(key=lambda item: item[1], reverse=True)
+
+        similarities.sort(
+            key=lambda item: item[1],
+            reverse=True
+        )
 
         return similarities[:limit]
 
-    # 7. Count how many foods contain each ingredient.
-    def get_most_common_ingredients(self, limit=5):
-        if not isinstance(limit, int) or isinstance(limit, bool) or limit < 1:
-            raise ValueError("Limit must be a positive integer.")
+    # Time Complexity: O(I + V log V)
+    # Counts how often each ingredient appears and sorts the ingredients by frequency.
+    def get_most_common_ingredients(self, limit=10):
+        ingredient_counts = Counter()
 
-        counts = Counter({
-            ingredient: len(foods)
-            for ingredient, foods in self.graph.incidence.items()
-        })
+        for ingredients in self.graph.hyperedges.values():
+            ingredient_counts.update(ingredients)
 
-        return counts.most_common(limit)
+        return ingredient_counts.most_common(limit)
 
-    # 8. Produce an ingredient overlap report.
+    # Time Complexity: O(F log F + I)
+    # Groups foods by shared ingredients and reports ingredient pairs that appear together in at least two foods.
     def get_ingredient_overlap_report(self):
-        report = {}
+        ingredient_foods = self.graph.incidence
+        overlap_report = {}
 
-        for ingredient, foods in self.graph.incidence.items():
-            if len(foods) >= 2:
-                report[ingredient] = sorted(foods)
+        ingredients = sorted(ingredient_foods)
 
-        return report
+        for i in range(len(ingredients)):
+            ingredient1 = ingredients[i]
+
+            for j in range(i + 1, len(ingredients)):
+                ingredient2 = ingredients[j]
+
+                foods = (
+                    ingredient_foods[ingredient1]
+                    & ingredient_foods[ingredient2]
+                )
+
+                if len(foods) >= 2:
+                    pair = (ingredient1, ingredient2)
+                    overlap_report[pair] = sorted(foods)
+
+        return overlap_report
