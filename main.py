@@ -25,7 +25,7 @@ def display_foods(foods):
 # Displays the main menu.
 # Time: O(1), since the menu size is fixed.
 def display_menu():
-    print("\\n" + "=" * 55)
+    print("\n" + "=" * 55)
     print("       FOOD INGREDIENT ALLERGY CHECKER")
     print("=" * 55)
     print("1. Display food hypergraph")
@@ -109,9 +109,9 @@ def main():
                 unsafe = checker.find_foods_with_any_allergen(allergens)
                 safe = checker.find_safe_candidates(allergens)
 
-                print("\\nFoods with recorded allergen matches:")
+                print("\nFoods with recorded allergen matches:")
                 display_foods(unsafe)
-                print("\\nFoods with no recorded allergen matches:")
+                print("\nFoods with no recorded allergen matches:")
                 display_foods(safe)
                 print("This does not guarantee medical safety or rule out cross-contamination.")
 

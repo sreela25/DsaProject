@@ -132,7 +132,7 @@ class HyperGraph:
     # Prints every food and its ingredients.
     # Time: O(F log F + sum(k log k)) due to sorting.
     def display_hypergraph(self):
-        print("\\n========== FOOD HYPERGRAPH ==========")
+        print("\n========== FOOD HYPERGRAPH ==========")
         if not self.hyperedges:
             print("No foods available.")
             return
@@ -144,7 +144,7 @@ class HyperGraph:
     # Prints the reverse ingredient-to-food index.
     # Time: Depends on sorting the ingredient and food names.
     def display_incidence_index(self):
-        print("\\n========== INCIDENCE INDEX ==========")
+        print("\n========== INCIDENCE INDEX ==========")
         if not self.incidence:
             print("No ingredients available.")
             return
@@ -158,7 +158,7 @@ class HyperGraph:
     # Shows graph counts and checks that both indexes agree.
     # Time: O(V + F + I).
     def display_statistics(self):
-        print("\\n========== HYPERGRAPH STATISTICS ==========")
+        print("\n========== HYPERGRAPH STATISTICS ==========")
         print("Ingredient vertices:", self.get_vertex_count())
         print("Food hyperedges:", self.get_hyperedge_count())
         print("Ingredient-food links:", self.get_incidence_count())
