@@ -204,7 +204,6 @@ The project should be tested for:
 - Allergy screening results are informational and **must not be treated as a guarantee of medical safety**.
 
 ## 🔮 Future Enhancements
-
 - Import ingredient information from verified product labels.
 - Add a graphical user interface.
 - Support ingredient quantities and recipe-level analysis.
