@@ -163,7 +163,7 @@ def main():
                 ingredients1 = graph.get_ingredients_for_food(food1)
                 ingredients2 = graph.get_ingredients_for_food(food2)
 
-                print("\\n", food1.title(), ":", ", ".join(sorted(ingredients1)))
+                print("\n", food1.title(), ":", ", ".join(sorted(ingredients1)))
                 print(food2.title(), ":", ", ".join(sorted(ingredients2)))
                 print("Shared ingredients:", ", ".join(sorted(shared)) if shared else "None")
 
@@ -180,12 +180,12 @@ def main():
                 if not related:
                     print("No other foods share ingredients with this food.")
                 else:
-                    print("\\nRelated foods and shared ingredients:")
+                    print("\nRelated foods and shared ingredients:")
                     for name, shared in sorted(related.items()):
                         print(name.title(), "->", ", ".join(sorted(shared)))
 
                 if similar:
-                    print("\\nSimilarity ranking (Jaccard score):")
+                    print("\nSimilarity ranking (Jaccard score):")
                     for name, score, shared in similar:
                         print(
                             name.title(),
