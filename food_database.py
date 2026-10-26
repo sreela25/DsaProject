@@ -1,4 +1,3 @@
-
 from collections import Counter
 
 
@@ -6,120 +5,87 @@ class FoodDatabase:
     def __init__(self, graph):
         self.graph = graph
 
-    # Time Complexity: O(n + k)
-    # Adds a new food or updates its ingredients in the hypergraph.
+    # Adds a food or updates its ingredients.
+    # Time: Depends on the number of ingredients.
     def add_or_update_food(self, food, ingredients):
         return self.graph.add_food(food, ingredients)
 
-    # Time Complexity: O(n + k)
-    # Removes a food and its ingredient links from the graph.
+    # Removes a food hyperedge.
+    # Time: O(k), where k is the number of ingredients in that food.
     def remove_food(self, food):
         return self.graph.remove_food(food)
 
-    # Time Complexity: O(n)
-    # Checks whether a food with the given name exists.
+    # Checks whether a food exists by its exact name.
+    # Time: O(n) for name cleanup, then O(1) average lookup.
     def search_food(self, food):
         return self.graph.contains_food(food)
 
-    # Time Complexity: O(n + k1 + k2)
-    # Gets both ingredient sets and finds the ingredients they share.
+    # Returns the ingredients shared by two foods.
+    # Time: O(k1 + k2) to retrieve and compare the ingredient sets.
     def get_shared_ingredients(self, food1, food2):
         ingredients1 = self.graph.get_ingredients_for_food(food1)
         ingredients2 = self.graph.get_ingredients_for_food(food2)
-
         return ingredients1 & ingredients2
 
-    # Time Complexity: O(n + I)
-    # Finds other foods that contain at least one ingredient used in the selected food.
+    # Finds foods sharing at least one ingredient with the selected food.
+    # Time: Depends on the incidence sets visited.
     def find_related_foods(self, food):
+        food = self.graph._normalize_name(food)
+        if food not in self.graph.hyperedges:
+            return {}
+
         ingredients = self.graph.get_ingredients_for_food(food)
         related = {}
 
         for ingredient in ingredients:
-            foods = self.graph.get_foods_for_ingredient(ingredient)
-
-            for other_food in foods:
+            for other_food in self.graph.get_foods_for_ingredient(ingredient):
                 if other_food != food:
-                    if other_food not in related:
-                        related[other_food] = set()
-
-                    related[other_food].add(ingredient)
+                    related.setdefault(other_food, set()).add(ingredient)
 
         return related
 
-    # Time Complexity: O(n + I + C*k)
-    # Checks only foods that share at least one ingredient, calculates their Jaccard similarity, and returns the most similar foods first.
+    # Ranks foods by Jaccard similarity using only foods that share ingredients.
+    # Time: Depends on candidates and sorting; worst case can approach O(F log F + I).
     def find_similar_foods(self, food, limit=5):
-        target_ingredients = (
-            self.graph.get_ingredients_for_food(food)
-        )
-
-        if not target_ingredients:
+        food = self.graph._normalize_name(food)
+        target = self.graph.get_ingredients_for_food(food)
+        if not target:
             return []
 
         candidates = set()
-
-        for ingredient in target_ingredients:
-            foods = self.graph.get_foods_for_ingredient(ingredient)
-            candidates.update(foods)
-
+        for ingredient in target:
+            candidates.update(self.graph.get_foods_for_ingredient(ingredient))
         candidates.discard(food)
-        similarities = []
 
+        results = []
         for other_food in candidates:
-            other_ingredients = (
-                self.graph.get_ingredients_for_food(other_food)
-            )
+            other = self.graph.get_ingredients_for_food(other_food)
+            shared = target & other
+            if shared:
+                score = len(shared) / len(target | other)
+                results.append((other_food, round(score, 3), shared))
 
-            shared = target_ingredients.intersection(other_ingredients)
-            combined = target_ingredients.union(other_ingredients)
+        results.sort(key=lambda item: item[1], reverse=True)
+        return results[:max(0, limit)]
 
-            if combined:
-                score = len(shared) / len(combined)
-
-                if shared:
-                    similarities.append(
-                        (other_food, round(score, 3), shared)
-                    )
-
-        similarities.sort(
-            key=lambda item: item[1],
-            reverse=True
-        )
-
-        return similarities[:limit]
-
-    # Time Complexity: O(I + V log V)
-    # Counts how often each ingredient appears and sorts the ingredients by frequency.
+    # Counts how many foods contain each ingredient.
+    # Time: O(I + V log V) as a general upper bound including sorting.
     def get_most_common_ingredients(self, limit=10):
-        ingredient_counts = Counter()
-
+        counts = Counter()
         for ingredients in self.graph.hyperedges.values():
-            ingredient_counts.update(ingredients)
+            counts.update(ingredients)
+        return counts.most_common(max(0, limit))
 
-        return ingredient_counts.most_common(limit)
-
-    # Time Complexity: O(F log F + I)
-    # Groups foods by shared ingredients and reports ingredient pairs that appear together in at least two foods.
+    # Finds ingredient pairs that occur together in at least two foods.
+    # Time: O(V^2 * D) in the worst case, where D is set-intersection cost.
     def get_ingredient_overlap_report(self):
-        ingredient_foods = self.graph.incidence
-        overlap_report = {}
+        ingredients = sorted(self.graph.incidence)
+        report = {}
 
-        ingredients = sorted(ingredient_foods)
-
-        for i in range(len(ingredients)):
-            ingredient1 = ingredients[i]
-
-            for j in range(i + 1, len(ingredients)):
-                ingredient2 = ingredients[j]
-
-                foods = (
-                    ingredient_foods[ingredient1]
-                    & ingredient_foods[ingredient2]
-                )
-
+        for i, ingredient1 in enumerate(ingredients):
+            for ingredient2 in ingredients[i + 1:]:
+                foods = self.graph.incidence[ingredient1] & self.graph.incidence[ingredient2]
                 if len(foods) >= 2:
-                    pair = (ingredient1, ingredient2)
-                    overlap_report[pair] = sorted(foods)
+                    report[(ingredient1, ingredient2)] = sorted(foods)
 
-        return overlap_report
+        return report

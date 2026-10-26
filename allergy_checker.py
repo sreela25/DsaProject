@@ -1,179 +1,127 @@
-
 class AllergyChecker:
     def __init__(self, graph):
         self.graph = graph
 
-    # Time Complexity: O(n + I)
-    # Checks each allergen and collects foods containing it.
+    # Finds foods containing at least one listed allergen.
+    # Time: Proportional to the incidence sets visited and copied.
     def find_foods_with_any_allergen(self, allergens):
         allergens = self._normalize_list(allergens)
-        unsafe_foods = set()
+        unsafe = set()
 
         for allergen in allergens:
-            unsafe_foods.update(
-                self.graph.get_foods_for_ingredient(allergen)
-            )
+            unsafe.update(self.graph.get_foods_for_ingredient(allergen))
+        return unsafe
 
-        return unsafe_foods
-
-    # Time Complexity: O(n + I + d)
-    # Starts with the ingredient found in the fewest foods,
-    # then keeps only foods containing every requested ingredient.
+    # Finds foods containing every requested ingredient.
+    # Starts with the ingredient found in the fewest foods.
+    # Time: Depends on the sizes of the incidence sets.
     def find_foods_with_all_ingredients(self, ingredients):
         ingredients = self._normalize_list(ingredients)
-
         if not ingredients:
             return set()
 
-        ingredient_foods = []
-
+        sets = []
         for ingredient in ingredients:
             foods = self.graph.get_foods_for_ingredient(ingredient)
-
             if not foods:
                 return set()
+            sets.append(foods)
 
-            ingredient_foods.append(foods)
+        sets.sort(key=len)
+        result = sets[0].copy()
 
-        ingredient_foods.sort(key=len)
-        result = ingredient_foods[0].copy()
-
-        for foods in ingredient_foods[1:]:
+        for foods in sets[1:]:
             result.intersection_update(foods)
-
             if not result:
                 break
-
         return result
 
-    # Time Complexity: O(n + I + F*k)
-    # First finds foods containing all the ingredients,
-    # then checks which ones have exactly that ingredient set.
+    # Finds foods whose ingredient set exactly matches the requested set.
+    # Time: Depends on candidate count and the ingredients in each candidate.
     def find_foods_with_exact_ingredients(self, ingredients):
-        ingredients = self._normalize_list(ingredients)
-
-        if not ingredients:
+        requested = self._normalize_list(ingredients)
+        if not requested:
             return set()
 
-        candidates = self.find_foods_with_all_ingredients(
-            ingredients
-        )
-        exact_foods = set()
+        candidates = self.find_foods_with_all_ingredients(requested)
+        return {
+            food for food in candidates
+            if self.graph.get_ingredients_for_food(food) == requested
+        }
 
-        for food in candidates:
-            food_ingredients = (
-                self.graph.get_ingredients_for_food(food)
-            )
-
-            if food_ingredients == set(ingredients):
-                exact_foods.add(food)
-
-        return exact_foods
-
-    # Time Complexity: O(n + F + I)
-    # Gets all foods, removes the ones containing allergens,
-    # and returns the remaining foods as candidates.
+    # Finds foods with no recorded matches for the listed allergens.
+    # Time: O(F + I) in the general case.
     def find_safe_candidates(self, allergens):
-        allergens = self._normalize_list(allergens)
+        all_foods = set(self.graph.hyperedges)
+        unsafe = self.find_foods_with_any_allergen(allergens)
+        return all_foods - unsafe
 
-        all_foods = set(self.graph.hyperedges.keys())
-        unsafe_foods = self.find_foods_with_any_allergen(allergens)
-
-        return all_foods - unsafe_foods
-
-    # Time Complexity: O(n + I + k)
-    # Checks which requested ingredients are present in each
-    # matching food and prepares a short explanation.
+    # Explains which foods contain all requested ingredients.
+    # Time: Depends on the matching search and the returned food ingredients.
     def explain_food_matches(self, ingredients):
-        ingredients = self._normalize_list(ingredients)
-        matching_foods = self.find_foods_with_all_ingredients(
-            ingredients
-        )
-
-        explanations = []
+        requested = self._normalize_list(ingredients)
+        matching_foods = self.find_foods_with_all_ingredients(requested)
+        reports = []
 
         for food in sorted(matching_foods):
-            food_ingredients = (
-                self.graph.get_ingredients_for_food(food)
-            )
-            matched = sorted(set(ingredients).intersection(
-                food_ingredients
-            ))
-
-            explanations.append({
+            actual = self.graph.get_ingredients_for_food(food)
+            matched = sorted(requested & actual)
+            reports.append({
                 "food": food,
                 "found": bool(matched),
                 "matches": matched,
-                "message": (
-                    "All requested ingredients are present."
-                    if matched else "No requested ingredients found."
-                )
+                "message": "All requested ingredients are present."
             })
 
-        return explanations
+        return reports
 
-    # Time Complexity: O(n + I)
-    # Finds foods containing any ingredient in the selected food,
-    # then removes the selected food from the result.
+    # Finds other foods sharing one or more ingredients with the selected food.
+    # Time: Depends on the incidence sets visited.
     def find_foods_sharing_ingredients(self, food):
-        food = self._normalize_name(food)
+        food = self.graph._normalize_name(food)
         ingredients = self.graph.get_ingredients_for_food(food)
-
-        related_foods = set()
+        related = set()
 
         for ingredient in ingredients:
-            related_foods.update(
-                self.graph.get_foods_for_ingredient(ingredient)
-            )
+            related.update(self.graph.get_foods_for_ingredient(ingredient))
 
-        related_foods.discard(food)
-        return related_foods
+        related.discard(food)
+        return related
 
-    # Time Complexity: O(n + F + I)
-    # Separates foods into safe and unsafe groups and reports
-    # the counts and percentage of foods marked as safe.
+    # Creates a summary of foods with and without recorded allergen matches.
+    # Time: O(F + I) in the general case.
     def get_safety_audit_report(self, allergens):
         allergens = self._normalize_list(allergens)
+        all_foods = set(self.graph.hyperedges)
+        unsafe = self.find_foods_with_any_allergen(allergens)
+        safe = all_foods - unsafe
+        total = len(all_foods)
 
-        all_foods = set(self.graph.hyperedges.keys())
-        unsafe_foods = self.find_foods_with_any_allergen(allergens)
-        safe_foods = all_foods - unsafe_foods
-
-        total_foods = len(all_foods)
-
-        if total_foods == 0:
-            safe_percentage = 0
-        else:
-            safe_percentage = round(
-                len(safe_foods) / total_foods * 100, 2
-            )
+        percentage = round(len(safe) / total * 100, 2) if total else 0
 
         return {
-            "total_foods": total_foods,
-            "safe_foods": len(safe_foods),
-            "unsafe_foods": len(unsafe_foods),
-            "safe_percentage": safe_percentage,
-            "allergens_checked": allergens,
-            "safe_food_list": sorted(safe_foods),
-            "unsafe_food_list": sorted(unsafe_foods)
+            "total_foods": total,
+            "safe_foods": len(safe),
+            "unsafe_foods": len(unsafe),
+            "safe_percentage": percentage,
+            "allergens_checked": sorted(allergens),
+            "safe_food_list": sorted(safe),
+            "unsafe_food_list": sorted(unsafe)
         }
 
-    # Time Complexity: O(n)
-    # Removes extra spaces and makes the name lowercase.
+    # Cleans and validates one name.
+    # Time: O(n), where n is the name length.
     @staticmethod
     def _normalize_name(name):
         if not isinstance(name, str):
             raise TypeError("Name must be a string.")
-
         name = name.strip().casefold()
-
         if not name:
             raise ValueError("Name cannot be empty.")
-
         return name
 
-    # Time Complexity: O(n)
-    # Cleans each name and removes duplicate ingredients.
+    # Cleans names and removes duplicates.
+    # Time: Proportional to the total length of the input names.
     @classmethod
     def _normalize_list(cls, items):
         if isinstance(items, str):
@@ -184,9 +132,4 @@ class AllergyChecker:
         except TypeError:
             raise TypeError("Expected a string or an iterable of names.")
 
-        normalized = set()
-
-        for item in items:
-            normalized.add(cls._normalize_name(item))
-
-        return normalized
+        return {cls._normalize_name(item) for item in items}
