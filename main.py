@@ -4,8 +4,8 @@ from food_database import FoodDatabase
 from allergy_checker import AllergyChecker
 
 
-# Time Complexity: O(n)
-# Splits the input into names and removes extra spaces.
+# Reads comma-separated names from the user.
+# Time Complexity: O(n), where n is the input length.
 def read_names(prompt):
     values = input(prompt).strip()
 
@@ -19,49 +19,48 @@ def read_names(prompt):
     ]
 
 
-# Time Complexity: O(F log F)
-# Sorts the food names before displaying them.
+# Displays food names in alphabetical order.
+# Time Complexity: O(F log F), where F is the number of foods.
 def display_foods(foods):
     if not foods:
-        print("No results found.")
+        print("No matching foods found.")
         return
 
     for food in sorted(foods):
         print("-", food.title())
 
 
-# Time Complexity: O(1)
-# Displays all the available menu options.
+# Displays the available operations.
+# Time Complexity: O(1), since the menu size is fixed.
 def display_menu():
-    print("\n" + "=" * 50)
-    print("     FOOD INGREDIENT ALLERGY CHECKER")
-    print("=" * 50)
-    print("1. Display hypergraph")
-    print("2. Display incidence index")
-    print("3. Find foods containing any allergen")
-    print("4. Find foods containing all ingredients")
-    print("5. Find candidate foods without listed allergens")
+    print("\n" + "=" * 55)
+    print("       FOOD INGREDIENT ALLERGY CHECKER")
+    print("=" * 55)
+    print("1. Display food hypergraph")
+    print("2. Display ingredient incidence index")
+    print("3. Find foods containing at least one listed allergen")
+    print("4. Find foods containing all specified ingredients")
+    print("5. Find foods with no recorded allergen matches")
     print("6. Explain ingredient matches")
-    print("7. Add or update food")
-    print("8. Remove food")
-    print("9. Search food by name")
-    print("10. Find shared ingredients")
-    print("11. Find related foods")
-    print("12. Find similar foods")
-    print("13. Show common ingredients")
-    print("14. Show ingredient overlap report")
-    print("15. Show safety audit report")
+    print("7. Add or update a food")
+    print("8. Remove a food")
+    print("9. Find food by exact name")
+    print("10. Compare ingredients of two foods")
+    print("11. Find foods sharing ingredients")
+    print("12. Rank foods by ingredient similarity")
+    print("13. Show most frequently used ingredients")
+    print("14. Show ingredient pairs shared by multiple foods")
+    print("15. Show allergen matching summary")
     print("16. Show hypergraph statistics")
     print("0. Exit")
-    print("=" * 50)
+    print("=" * 55)
 
 
 # Time Complexity: Depends on the selected operation.
-# Creates the graph, loads sample foods and runs the menu.
 def main():
     graph = HyperGraph()
 
-    # Add sample foods so the program can be tested.
+    # Sample data for testing the application.
     graph.add_food(
         "Pizza",
         ["Wheat", "Milk", "Cheese", "Tomato"]
@@ -87,66 +86,90 @@ def main():
         choice = input("Enter your choice: ").strip()
 
         try:
-            # Time Complexity: Depends on the number of foods and ingredients that need to be displayed.
+            # Displays every food and its ingredients.
+            # Time Complexity: Depends on the foods and ingredients displayed.
             if choice == "1":
                 graph.display_hypergraph()
 
-            # Time Complexity: Depends on the incidence index and the sorting needed for display.
+            # Shows which foods contain each ingredient.
+            # Time Complexity: Depends on the index size and sorting.
             elif choice == "2":
                 graph.display_incidence_index()
 
-            # Finds foods containing at least one listed allergen.
+            # Finds foods containing one or more listed allergens.
             # Time Complexity: Depends on the incidence sets visited.
             elif choice == "3":
                 allergens = read_names(
                     "Enter allergens separated by commas: "
                 )
+
+                if not allergens:
+                    print("Please enter at least one allergen.")
+                    continue
+
                 result = checker.find_foods_with_any_allergen(allergens)
+
+                print("\nFoods containing at least one listed allergen:")
                 display_foods(result)
 
-            # Finds foods containing every requested ingredient.
+            # Finds foods that contain every entered ingredient.
             # Time Complexity: Depends on the sizes of the incidence sets.
             elif choice == "4":
                 ingredients = read_names(
                     "Enter required ingredients separated by commas: "
                 )
+
+                if not ingredients:
+                    print("Please enter at least one ingredient.")
+                    continue
+
                 result = checker.find_foods_with_all_ingredients(
                     ingredients
                 )
+
+                print("\nFoods containing all specified ingredients:")
                 display_foods(result)
 
-            # Lists foods that do not contain any listed allergens.
+            # Lists foods with no recorded matches for the allergens.
             # Time Complexity: O(F + I) in the general case.
             elif choice == "5":
                 allergens = read_names(
                     "Enter allergens to exclude, separated by commas: "
                 )
+
                 result = checker.find_safe_candidates(allergens)
-                print("Candidates with no recorded allergen matches:")
+
+                print("\nFoods with no recorded allergen matches:")
                 display_foods(result)
                 print(
-                    "Note: This does not guarantee medical safety "
+                    "\nNote: This result does not guarantee medical safety "
                     "or rule out cross-contamination."
                 )
 
-            # Explains which requested ingredients are present in foods.
-            # Uses the explain_food_matches(ingredients) method from the earlier AllergyChecker implementation.
+            # Explains which requested ingredients occur in matching foods.
+            # Uses explain_food_matches() from AllergyChecker.
             elif choice == "6":
                 ingredients = read_names(
                     "Enter ingredients to check, separated by commas: "
                 )
+
+                if not ingredients:
+                    print("Please enter at least one ingredient.")
+                    continue
+
                 reports = checker.explain_food_matches(ingredients)
 
                 if not reports:
-                    print("No matching foods found.")
+                    print("No foods contain all the specified ingredients.")
                 else:
+                    print("\nIngredient Match Explanation")
+
                     for report in reports:
                         print("\nFood:", report["food"].title())
-                        print("Found:", report["found"])
                         print("Matching ingredients:", report["matches"])
-                        print("Message:", report["message"])
+                        print("Explanation:", report["message"])
 
-            # Adds a food or updates its ingredient list.
+            # Adds a food or updates its ingredients.
             # Time Complexity: O(k) graph operations for a new food, excluding name-processing costs.
             elif choice == "7":
                 food = input("Enter food name: ").strip()
@@ -154,76 +177,93 @@ def main():
                     "Enter ingredients separated by commas: "
                 )
 
-                if not ingredients:
-                    print("Please enter at least one ingredient.")
+                if not food or not ingredients:
+                    print("Food name and ingredients are required.")
                     continue
 
                 database.add_or_update_food(food, ingredients)
-                print("Food added or updated.")
+                print("Food added or updated successfully.")
 
-            # Removes a food and its links from the graph.
+            # Removes a food and its ingredient links.
             # Time Complexity: O(k), excluding name normalization.
             elif choice == "8":
                 food = input("Enter food name to remove: ").strip()
 
                 if database.remove_food(food):
-                    print("Food removed.")
+                    print("Food removed successfully.")
                 else:
                     print("Food not found.")
 
-            # Checks whether the exact food name exists.
-            # Time Complexity: O(n) because the name is normalized.
+            # Searches for an exact food name and displays its ingredients.
+            # Time Complexity: O(n + k), including normalization and copying.
             elif choice == "9":
-                food = input("Enter food name to search: ").strip()
+                food = input("Enter exact food name: ").strip()
 
                 if database.search_food(food):
                     ingredients = graph.get_ingredients_for_food(food)
-                    print(
-                        food.title(),
-                        "->",
-                        ", ".join(sorted(ingredients))
-                    )
-                else:
-                    print("Food not found.")
 
-            # Finds ingredients shared by two foods.
-            # Time Complexity: O(k1 + k2) to retrieve and compare the two ingredient sets.
+                    print("\nFood:", food.title())
+                    print("Ingredients:", ", ".join(sorted(ingredients)))
+                else:
+                    print("Food not found. Check the spelling and try again.")
+
+            # Compares two foods and lists their common ingredients.
+            # Time Complexity: O(k1 + k2) to retrieve and compare the sets.
             elif choice == "10":
                 food1 = input("Enter first food: ").strip()
                 food2 = input("Enter second food: ").strip()
 
-                result = database.get_shared_ingredients(food1, food2)
+                if (not database.search_food(food1) or
+                        not database.search_food(food2)):
+                    print("One or both foods were not found.")
+                    continue
 
-                if result:
-                    print("Shared ingredients:", ", ".join(sorted(result)))
+                shared = database.get_shared_ingredients(food1, food2)
+
+                if shared:
+                    print("\nShared ingredients:", ", ".join(sorted(shared)))
                 else:
-                    print("No shared ingredients found.")
+                    print("These foods have no shared ingredients.")
 
-            # Finds foods that share one or more ingredients.
+            # Finds other foods that share ingredients with the selected food.
             # Time Complexity: Depends on the incidence sets visited.
             elif choice == "11":
                 food = input("Enter food name: ").strip()
+
+                if not database.search_food(food):
+                    print("Food not found.")
+                    continue
+
                 results = database.find_related_foods(food)
 
                 if not results:
-                    print("No related foods found.")
+                    print("No other foods share its ingredients.")
                 else:
+                    print("\nRelated foods:")
+
                     for related_food, ingredients in sorted(results.items()):
                         print(
                             related_food.title(),
-                            "- shared:",
+                            "- Shared ingredients:",
                             ", ".join(sorted(ingredients))
                         )
 
-            # Ranks foods according to ingredient similarity.
-            # Time Complexity: Depends on the number of candidate foods and the sorting step.
+            # Ranks foods by Jaccard similarity of their ingredients.
+            # Time Complexity: Depends on candidate foods and sorting.
             elif choice == "12":
                 food = input("Enter food name: ").strip()
+
+                if not database.search_food(food):
+                    print("Food not found.")
+                    continue
+
                 results = database.find_similar_foods(food)
 
                 if not results:
                     print("No similar foods found.")
                 else:
+                    print("\nFoods ranked by ingredient similarity:")
+
                     for name, score, shared in results:
                         print(
                             name.title(),
@@ -232,63 +272,91 @@ def main():
                             ", ".join(sorted(shared))
                         )
 
-            # Shows the most frequently used ingredients.
-            # Time Complexity: O(I + V log V) as a general bound.
+            # Displays ingredients ranked by how many foods contain them.
+            # Time Complexity: O(I + V log V) as a general upper bound.
             elif choice == "13":
                 limit = int(
-                    input("Number of ingredients to display: ")
+                    input("How many ingredients should be displayed? ")
                 )
+
+                if limit < 1:
+                    print("Please enter a number greater than zero.")
+                    continue
+
                 results = database.get_most_common_ingredients(limit)
 
-                for ingredient, count in results:
-                    print(ingredient.title(), ":", count, "foods")
+                if not results:
+                    print("No ingredients available.")
+                else:
+                    print("\nMost frequently used ingredients:")
 
-            # Shows ingredient pairs that occur together in multiple foods.
-            # Time Complexity: Worst case depends on all ingredient pairs and the sizes of their incidence sets.
+                    for ingredient, count in results:
+                        print(
+                            ingredient.title(),
+                            ":", count, "food(s)"
+                        )
+
+            # Lists ingredient pairs that occur together in at least two foods.
+            # Time Complexity: Worst case depends on all ingredient pairs
+            # and the sizes of their incidence sets.
             elif choice == "14":
                 results = database.get_ingredient_overlap_report()
 
                 if not results:
-                    print("No shared ingredient pairs found.")
+                    print("No ingredient pairs are shared by multiple foods.")
                 else:
+                    print("\nIngredient pairs shared by multiple foods:")
+
                     for ingredients, foods in sorted(results.items()):
                         print(
                             ingredients[0].title(),
-                            "and",
+                            "+",
                             ingredients[1].title(),
                             "->",
                             ", ".join(food.title() for food in foods)
                         )
 
-            # Reports foods with and without recorded allergen matches.
-            # Time Complexity: Depends on the foods and incidence sets.
+            # Summarizes foods with and without recorded allergen matches.
+            # Time Complexity: Depends on the number of foods and incidence sets.
             elif choice == "15":
                 allergens = read_names(
-                    "Enter your allergens separated by commas: "
+                    "Enter allergens separated by commas: "
                 )
+
                 report = checker.get_safety_audit_report(allergens)
 
-                print("\nSAFETY AUDIT SUMMARY")
-                print("-" * 30)
+                print("\nALLERGEN MATCHING SUMMARY")
+                print("-" * 35)
                 print("Total foods:", report["total_foods"])
-                print("Foods with matching allergens:", report["unsafe_foods"])
-                print("Foods without recorded matches:", report["safe_foods"])
+                print(
+                    "Foods with allergen matches:",
+                    report["unsafe_foods"]
+                )
+                print(
+                    "Foods without recorded matches:",
+                    report["safe_foods"]
+                )
                 print(
                     "Percentage without recorded matches:",
                     str(report["safe_percentage"]) + "%"
                 )
-                print("This report does not certify food as medically safe.")
+                print(
+                    "\nThis report is based only on the ingredients "
+                    "recorded in the database. It does not certify "
+                    "food as medically safe."
+                )
 
-            # Displays the hypergraph counts and checks its structure.
-            # Time Complexity: O(V + F + I) for validation.
+            # Displays graph counts and checks the data structure.
+            # Time Complexity: O(V + F + I) for invariant validation.
             elif choice == "16":
                 graph.display_statistics()
+
                 print(
                     "Incidence index valid:",
                     graph.validate_invariants()
                 )
 
-            # Exits the program.
+            # Exits the application.
             # Time Complexity: O(1).
             elif choice == "0":
                 print("Exiting the application.")
@@ -297,7 +365,6 @@ def main():
             else:
                 print("Invalid choice. Please select 0 to 16.")
 
-        # Handles invalid input and incorrect data types.
         except (ValueError, TypeError) as error:
             print("Input error:", error)
 
