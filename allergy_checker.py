@@ -1,7 +1,6 @@
 class AllergyChecker:
     def __init__(self, graph):
         self.graph = graph
-
     # Finds foods containing at least one listed allergen.
     # Time: Proportional to the incidence sets visited and copied.
     def find_foods_with_any_allergen(self, allergens):
