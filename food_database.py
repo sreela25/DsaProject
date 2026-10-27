@@ -69,12 +69,10 @@ class FoodDatabase:
         return results[:max(0, limit)]
 
     # Counts how many foods contain each ingredient.
-    # Time: O(I + V log V) as a general upper bound including sorting.
+    # Time: O(V log V) as a general upper bound including sorting.
     def get_most_common_ingredients(self, limit=10):
-        counts = Counter()
-        for ingredients in self.graph.hyperedges.values():
-            counts.update(ingredients)
-        return counts.most_common(max(0, limit))
+        counts = {ingredient: len(foods) for ingredient, foods in self.graph.incidence.items()}
+        return sorted(counts.items(), key=lambda item: item[1], reverse=True)[:max(0, limit)]
 
     # Finds ingredient pairs that occur together in at least two foods.
     # Time: O(V^2 * D) in the worst case, where D is set-intersection cost.
